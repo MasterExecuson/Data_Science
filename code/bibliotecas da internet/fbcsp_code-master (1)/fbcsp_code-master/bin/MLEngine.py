@@ -18,7 +18,7 @@ class MLEngine:
         self.window_details = window_details
         self.m_filters = m_filters
 
-    def experiment(self):
+    def experiment(self,model=SVR(gamma='auto')):
 
         '''for BCIC Dataset'''
         bcic_data = LoadData.LoadBCIC(self.file_to_load, self.data_path)
@@ -32,7 +32,7 @@ class MLEngine:
         # eeg_data.update({'x_data':eeg_data_selected_channels})
 
         fbank = FilterBank(eeg_data.get('fs'))
-        fbank_coeff = fbank.get_filter_coeff()
+        # fbank_coeff = fbank.get_filter_coeff()
         filtered_data = fbank.filter_data(eeg_data.get('x_data'),self.window_details)
         y_labels = eeg_data.get('y_labels')
 
@@ -70,7 +70,7 @@ class MLEngine:
                     x_features_train = fbcsp.transform(x_train_fb,class_idx=cls_of_interest)
                     x_features_test = fbcsp.transform(x_test_fb,class_idx=cls_of_interest)
 
-                    classifier_type = SVR(gamma='auto')
+                    classifier_type = model
                     classifier = Classifier(classifier_type)
                     y_train_predicted[:,j] = classifier.fit(x_features_train,np.asarray(y_train_cls,dtype=np.float))
                     y_test_predicted[:,j] = classifier.predict(x_features_test)
@@ -179,19 +179,19 @@ class FilterBank:
         self.gstop = 30
         self.filter_coeff={}
 
-    def get_filter_coeff(self):
-        Nyquist_freq = self.fs/2
+    # def get_filter_coeff(self):
+    #     Nyquist_freq = self.fs/2
 
-        for i, f_low_pass in enumerate(self.f_pass):
-            f_pass = np.asarray([f_low_pass, f_low_pass+self.f_width])
-            f_stop = np.asarray([f_pass[0]-self.f_trans, f_pass[1]+self.f_trans])
-            wp = f_pass/Nyquist_freq
-            ws = f_stop/Nyquist_freq
-            order, wn = cheb2ord(wp, ws, self.gpass, self.gstop)
-            b, a = signal.cheby2(order, self.gstop, ws, btype='bandpass')
-            self.filter_coeff.update({i:{'b':b,'a':a}})
+    #     for i, f_low_pass in enumerate(self.f_pass):
+    #         f_pass = np.asarray([f_low_pass, f_low_pass+self.f_width])
+    #         f_stop = np.asarray([f_pass[0]-self.f_trans, f_pass[1]+self.f_trans])
+    #         wp = f_pass/Nyquist_freq
+    #         ws = f_stop/Nyquist_freq
+    #         order, wn = cheb2ord(wp, ws, self.gpass, self.gstop)
+    #         b, a = signal.cheby2(order, self.gstop, ws, btype='bandpass')
+    #         self.filter_coeff.update({i:{'b':b,'a':a}})
 
-        return self.filter_coeff
+    #     return self.filter_coeff
 
     def filter_data(self,eeg_data,window_details={}):
         n_trials, n_channels, n_samples = eeg_data.shape

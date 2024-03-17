@@ -76,9 +76,11 @@ csp=CSP(n_components=2, reg=None, log=True, norm_trace=False)
 #acquire and combine features of different fequency bands
 features_train=[]
 features_test=[]
-freq=[8,12,16,20,24,28,32]
+csps = []
+freq=[4,8,12,16,20,24,28,32,36,40]
 for freq_count in range(len(freq)):
 #loop for freqency
+    csp=CSP(n_components=2, reg=None, log=True, norm_trace=False)
     lower=freq[freq_count]
     if lower==freq[-1]:
         break
@@ -87,6 +89,7 @@ for freq_count in range(len(freq)):
     X_test_filt=butter_bandpass_filter(X_test,lowcut=lower,highcut=higher,fs=128,order=8)
     tmp_train=csp.fit_transform(X_train_filt,y_train)
     tmp_test=csp.transform(X_test_filt)
+    csps.append(csp)
     if freq_count==0:
         features_train=tmp_train
         features_test=tmp_test
